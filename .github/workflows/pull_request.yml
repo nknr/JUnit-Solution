@@ -37,3 +37,9 @@ jobs:
         with:
           name: UnitTest
           path: app/build/reports/tests/testDebugUnitTest/
+
+      - name: Upload test report directory
+        uses: actions/upload-artifact@v2
+        with:
+          name: CoverageReport
+          path: app/build/reports/coverage/jacocoDebugCombinedTestReport/
