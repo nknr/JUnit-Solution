@@ -32,14 +32,14 @@ jobs:
       - name: Run unit tests
         run: ./gradlew test
 
+      - name: Upload coverage report directory
+        uses: actions/upload-artifact@v2
+        with:
+          name: CoverageReport
+          path: app/build/reports/coverage/jacocoDebugCombinedTestReport/
+
       - name: Upload test report directory
         uses: actions/upload-artifact@v2
         with:
           name: UnitTest
           path: app/build/reports/tests/testDebugUnitTest/
-
-      - name: Upload test report directory
-        uses: actions/upload-artifact@v2
-        with:
-          name: CoverageReport
-          path: app/build/reports/coverage/jacocoDebugCombinedTestReport/
