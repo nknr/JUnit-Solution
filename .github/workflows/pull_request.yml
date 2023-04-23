@@ -1,0 +1,42 @@
+on:
+  pull_request:
+    branches:
+      - 'main'
+
+jobs:
+  build:
+    name: Android build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: set up JDK 11
+        uses: actions/setup-java@v3
+        with: { java-version: 11 }
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - name: Build with Gradle
+        run: ./gradlew build
+
+  Unit-test:
+    name: Junit test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-java@v1
+        with: { java-version: 11 }
+      - name: Run unit tests
+        run: ./gradlew test
+
+      - name: Upload html test report
+        uses: actions/upload-artifact@v2
+        with:
+          name: report
+          path: app/build/reports/tests/testDebugUnitTest/index.html
+
+      - name: Upload test report directory
+        uses: actions/upload-artifact@v2
+        with:
+          name: UnitTest
+          path: app/build/reports/tests/testDebugUnitTest/
