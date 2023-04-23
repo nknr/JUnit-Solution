@@ -1,8 +1,13 @@
-project.afterEvaluate { project ->
-    setupAndroidReporting()
+jacoco {
+    toolVersion = "0.8.7"
+    reportsDirectory = file("${buildDir}/reports/coverage")
 }
 
-def setupAndroidReporting() {
+project.afterEvaluate { project ->
+    setupReporting()
+}
+
+def setupReporting() {
     tasks.withType(Test) {
         // Whether or not classes without source location should be instrumented
         jacoco.includeNoLocationClasses = true
@@ -20,20 +25,26 @@ def setupAndroidReporting() {
     if (!productFlavors) productFlavors.add('')
     productFlavors.each { productFlavorName ->
         buildTypes.each { buildTypeName ->
-            def sourceName, sourcePath
+            def sourceName
             if (!productFlavorName) {
-                sourceName = sourcePath = "${buildTypeName}"
+                sourceName = "${buildTypeName}"
             } else {
                 sourceName = "${productFlavorName}${buildTypeName.capitalize()}"
-                sourcePath = "${productFlavorName}/${buildTypeName}"
             }
+            def coverageName = "${sourceName}UnitTest"
             def testTaskName = "test${sourceName.capitalize()}UnitTest"
-            System.out.println("Task -> $testTaskName")
+            def testTaskNameReport = "create${sourceName.capitalize()}CoverageReport"
 
             // Create coverage task of form 'testFlavorTypeCoverage' depending on 'testFlavorTypeUnitTest'
-            task "${testTaskName}Coverage"(type: JacocoReport, dependsOn: "$testTaskName") {
+            task "jacoco${sourceName.capitalize()}CombinedTestReport"(type: JacocoReport, dependsOn: ["$testTaskName", "$testTaskNameReport"]) {
                 group = "Reporting"
-                description = "Generate Jacoco coverage reports on the ${sourceName.capitalize()} build."
+                description = "Generate Jacoco coverage reports on the ${testTaskName}, ${testTaskNameReport}, $coverageName"
+
+                reports {
+                    csv.enabled true // change if needed
+                    xml.enabled true // change if needed
+                    html.enabled true
+                }
 
                 def fileFilter = [
                         // data binding
@@ -77,22 +88,14 @@ def setupAndroidReporting() {
                 def javaTree = fileTree(dir: "${project.buildDir}/intermediates/javac/$sourceName/classes", excludes: fileFilter)
                 def kotlinTree = fileTree(dir: "${project.buildDir}/tmp/kotlin-classes/$sourceName", excludes: fileFilter)
                 classDirectories.from = files([javaTree], [kotlinTree])
-                executionData.from = files("${project.buildDir}/jacoco/${testTaskName}.exec")
-                def coverageSourceDirs = ["src/main/java",
-                                          "src/$productFlavorName/java",
-                                          "src/$buildTypeName/java"]
+
+                def coverageSourceDirs = [android.sourceSets.main.java.srcDirs, "src/main/kotlin", "src/$productFlavorName/java", "src/$buildTypeName/java"]
 
                 sourceDirectories.setFrom(files(coverageSourceDirs))
-                additionalSourceDirs.setFrom(files(coverageSourceDirs))
 
-                reports {
-                    csv.enabled true // change if needed
-                    xml.enabled true // change if needed
-                    html {
-                        enabled true
-                        destination file("${buildDir}/coverage-report")
-                    }
-                }
+                //executionData.from = files("${project.buildDir}/outputs/unit_test_code_coverage/${testTaskName}/${testTaskName}.exec")
+                executionData.from = fileTree(dir: "${project.buildDir}", includes: ["outputs/unit_test_code_coverage/$coverageName/${testTaskName}.exec"])
+
             }
         }
     }
