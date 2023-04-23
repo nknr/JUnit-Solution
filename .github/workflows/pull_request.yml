@@ -14,32 +14,74 @@ jobs:
       - name: set up JDK 11
         uses: actions/setup-java@v3
         with:
-            java-version: '11'
-            distribution: 'temurin'
-            cache: gradle
+          java-version: '11'
+          distribution: 'temurin'
+          cache: gradle
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Build with Gradle
         run: ./gradlew build
 
-  Unit-test:
-    name: Junit test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-java@v3
-        with: { java-version: 11 }
-      - name: Run unit tests
-        run: ./gradlew jacocoDebugCombinedTestReport
 
-      - name: Upload coverage report directory
-        uses: actions/upload-artifact@v3
-        with:
-          name: CoverageReport
-          path: app/build/reports/coverage/jacocoDebugCombinedTestReport/
-
-      - name: Upload test report directory
-        uses: actions/upload-artifact@v3
-        with:
-          name: UnitTest
-          path: app/build/reports/tests/testDebugUnitTest/
+    test:
+        name: test, coverage
+        # Run on macOS, as currently it is the only runner with hardware acceleration (HAXM) installed
+        runs-on: macOS-latest
+        strategy:
+          matrix:
+            # System Image for API 30 not yet available through the
+            # reactivecircus/android-emulator-runner Action, apparently
+            api-level: [ 29 ]
+        steps:
+          - uses: actions/checkout@v3
+          - uses: actions/setup-java@v3
+            with:
+              distribution: 'temurin'
+              java-version: '11'
+              cache: 'gradle'
+          # Emulator preparation - AVD snapshot caching
+          - name: AVD cache
+            uses: actions/cache@v3
+            id: avd-cache
+            with:
+              path: |
+                ~/.android/avd/*
+                ~/.android/adb*
+              key: avd-${{ matrix.api-level }}
+          - name: create AVD and generate snapshot for caching
+            if: steps.avd-cache.outputs.cache-hit != 'true'
+            uses: reactivecircus/android-emulator-runner@v3
+            with:
+              api-level: ${{ matrix.api-level }}
+              force-avd-creation: false
+              emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+              disable-animations: false
+              script: echo "Generated AVD snapshot for caching."
+          # Test and coverage
+          - name: Android tests (unit and instrumented)
+            uses: reactivecircus/android-emulator-runner@v3
+            with:
+              api-level: ${{ matrix.api-level }}
+              force-avd-creation: false
+              emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+              disable-animations: true
+              # Runs: Build, unit tests, instrumented tests, then combines coverage reports
+              script: ./gradlew jacocoDebugCombinedTestReport
+          - name: Upload coverage to Code-Climate
+            uses: paambaati/codeclimate-action@v2.7.5
+            env:
+              CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
+              JACOCO_SOURCE_PATH: "${{github.workspace}}/app/src/main/java"
+            with:
+              coverageLocations: ${{github.workspace}}/app/build/reports/coverage/jacocoCombinedTestReports/jacocoCombinedTestReports.xml:jacoco
+                # Artifacts
+          - name: Upload coverage report directory
+            uses: actions/upload-artifact@v3
+            with:
+              name: CoverageReport
+              path: app/build/reports/coverage/jacocoDebugCombinedTestReport/
+          - name: Upload test report directory
+            uses: actions/upload-artifact@v3
+            with:
+              name: UnitTest
+              path: app/build/reports/tests/testDebugUnitTest/
