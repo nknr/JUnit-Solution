@@ -13,5 +13,4 @@ object Validator {
     fun isNumberValid(number: String): Boolean {
         return TextUtils.isDigitsOnly(number)
     }
-
 }
