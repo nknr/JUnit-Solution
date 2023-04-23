@@ -1,10 +1,9 @@
 name: PR_unit_tests
 
 on:
-  push:
-    branches: [ "main" ]
   pull_request:
-    branches: [ "main" ]
+    branches:
+      - 'main'
 
 jobs:
   Unit-test:
@@ -21,11 +20,11 @@ jobs:
       - name: Upload html test report
         uses: actions/upload-artifact@v2
         with:
-          name: report
+          name: index.html
           path: app/build/reports/tests/testDebugUnitTest/index.html
 
       - name: Upload test report directory
         uses: actions/upload-artifact@v2
         with:
-          name: testUnit
+          name: testDebugStuff
           path: app/build/reports/tests/testDebugUnitTest/
