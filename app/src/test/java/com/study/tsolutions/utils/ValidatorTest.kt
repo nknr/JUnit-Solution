@@ -1,5 +1,8 @@
 package com.study.tsolutions.utils
 
+import android.text.TextUtils
+import io.mockk.every
+import io.mockk.mockkStatic
 import org.junit.Assert
 import org.junit.Test
 
@@ -17,6 +20,8 @@ class ValidatorTest : Assert() {
 
     @Test
     fun test() {
+        mockkStatic(TextUtils::class)
+        every { TextUtils.isDigitsOnly(any()) } returns true
         assertTrue(Validator.isNumberValid("1234"))
     }
 }
