@@ -30,7 +30,8 @@ jobs:
       - uses: actions/setup-java@v1
         with: { java-version: 11 }
       - name: Run unit tests
-        run: ./gradlew jacocoDebugCombinedTestReport
+        run: ./gradlew test
+#        run: ./gradlew jacocoDebugCombinedTestReport
 
       - name: Upload coverage report directory
         uses: actions/upload-artifact@v2
