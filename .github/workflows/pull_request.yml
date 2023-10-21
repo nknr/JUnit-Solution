@@ -23,6 +23,7 @@ jobs:
   Unit-test:
     name: Junit test
     runs-on: ubuntu-latest
+    if: ${{ github.event.label.name == 'JunitTc' }}
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-java@v3
