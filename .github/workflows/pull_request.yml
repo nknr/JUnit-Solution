@@ -6,7 +6,7 @@ on:
 jobs:
   comment:
     runs-on: ubuntu-latest
-    if: "(github.event.pull_request.body, null)"
+    if: "(github.event.pull_request.body == null)"
     steps:
       - uses: actions/github-script@v5
         with:
