@@ -4,15 +4,14 @@ on:
     branches:
       - 'main'
 jobs:
-  prinntEco:
-    name: Print output
-    runs: echo "All label ${{ toJSON(github.event.pull_request.labels.*.name) }} "
 
   build:
     name: Android build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        name: Print output
+        runs: echo "All label ${{ toJSON(github.event.pull_request.labels.*.name) }} "
       - name: set up JDK 11
         uses: actions/setup-java@v3
         with:
