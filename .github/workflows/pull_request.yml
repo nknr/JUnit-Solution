@@ -4,6 +4,21 @@ on:
     branches:
       - 'main'
 jobs:
+  comment:
+    runs-on: ubuntu-latest
+    if: "(github.event.pull_request.body, null)"
+    steps:
+      - uses: actions/github-script@v5
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: 'Please change PR Title!!'
+            })
+
   build:
     name: Android build
     runs-on: ubuntu-latest
