@@ -5,6 +5,7 @@ on:
     branches:
       - 'main'
 jobs:
+
   comment:
     runs-on: ubuntu-latest
     if: "(github.event.pull_request.body == null)"
@@ -32,12 +33,15 @@ jobs:
           java-version: '11'
           distribution: 'temurin'
           cache: gradle
+      - name: Print
+        run: echo "All label ${{ toJSON(github.event.pull_request.labels.*.name) }} "
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Build with Gradle
         run: ./gradlew build
 
   DebugApk:
+    needs: build
     name: Debug App
     runs-on: ubuntu-latest
     if: contains(github.event.pull_request.labels.*.name, 'DebugApp')
@@ -61,6 +65,7 @@ jobs:
 
 
   Unit-test:
+    needs: build
     name: Junit test
     runs-on: ubuntu-latest
     if: contains(github.event.pull_request.labels.*.name, 'JunitTc')
