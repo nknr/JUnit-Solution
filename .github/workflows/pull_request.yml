@@ -18,6 +18,7 @@ jobs:
               repo: context.repo.repo,
               body: 'Please change PR Title!!'
             })
+            exit
 
   build:
     name: Android build
