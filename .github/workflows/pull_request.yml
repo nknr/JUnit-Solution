@@ -4,6 +4,10 @@ on:
     branches:
       - 'main'
 jobs:
+  prinntEco:
+    name: Print output
+    runs: echo "All label ${{ toJSON(github.event.pull_request.labels.*.name) }} "
+
   build:
     name: Android build
     runs-on: ubuntu-latest
