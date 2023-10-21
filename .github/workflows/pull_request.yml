@@ -8,7 +8,8 @@ jobs:
     name: Print output
     runs-on: ubuntu-latest
     steps:
-      run: echo "All label ${{ toJSON(github.event.pull_request.labels.*.name) }} "
+      - uses: actions/setup-java@v3
+        run: echo "All label ${{ toJSON(github.event.pull_request.labels.*.name) }} "
 
   build:
     name: Android build
