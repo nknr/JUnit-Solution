@@ -21,7 +21,9 @@ jobs:
         run: ./gradlew build
 
   DebugApk:
+    needs: build
     name: Debug App
+    require: true
     runs-on: ubuntu-latest
     if: contains(github.event.pull_request.labels.*.name, 'DebugApp')
     steps:
@@ -44,6 +46,7 @@ jobs:
 
 
   Unit-test:
+    needs: build
     name: Junit test
     runs-on: ubuntu-latest
     if: contains(github.event.pull_request.labels.*.name, 'JunitTc')
