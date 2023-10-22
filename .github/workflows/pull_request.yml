@@ -1,9 +1,24 @@
 name: pull request
+run-name: ${{ github.actor }} is learning GitHub Actions
 on:
   pull_request:
     branches:
       - 'main'
 jobs:
+  comment:
+    runs-on: ubuntu-latest
+    if: "(github.event.pull_request.body == null)"
+    steps:
+      - uses: actions/github-script@v5
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: 'Please add description ${{ github.actor }}'
+            })
 
   build:
     name: Android build
@@ -16,8 +31,6 @@ jobs:
           java-version: '11'
           distribution: 'temurin'
           cache: gradle
-      - name: Print
-        run: echo "All label ${{ toJSON(github.event.pull_request.labels.*.name) }} "
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Build with Gradle
